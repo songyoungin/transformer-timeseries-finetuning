@@ -30,7 +30,7 @@ labels = torch.randint(0, config.num_targets, (batch_size,))
 
 # 5. Training example
 model.train()
-epochs = 5
+epochs = 50
 for epoch in range(1, epochs + 1):
     optimizer.zero_grad()
     outputs = model(past_values=inputs, target_values=labels)
@@ -43,7 +43,18 @@ for epoch in range(1, epochs + 1):
     optimizer.step()
     print(f"Epoch {epoch}/{epochs} - Loss: {loss.item():.4f}")
 
-# 6. Inference example
+# 6. Calculate accuracy
+model.eval()
+with torch.no_grad():
+    outputs = model(past_values=inputs)
+    logits = outputs.prediction_logits
+    probs = torch.softmax(logits, dim=-1)
+    preds = torch.argmax(probs, dim=-1)
+
+    accuracy = (preds == labels).float().mean()
+    print(f"Accuracy: {accuracy:.4f}")
+
+# 7. Inference example
 model.eval()
 with torch.no_grad():
     outputs = model(past_values=inputs)
